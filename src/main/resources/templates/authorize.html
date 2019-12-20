@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../static/element-ui-index.css">
+  </head>
+  <body>
+    <div class="login" id="app">
+      <div class="tabs">
+        <el-tabs type="border-card" v-model="activeName">
+          <!-- 错误提示 -->
+          <el-alert v-show="alert" :title="alertMsg" type="error" show-icon @close="alert=false"></el-alert>
+          <!-- 密码登录 -->
+          <el-tab-pane label="账号密码登录" name="account">
+            <el-form class="reg" ref="userForm" :model="userForm" :rules="userRules">
+              <el-form-item label prop="user">
+                <el-input  class="input" v-model="userForm.user" placeholder="请输入手机号" @keyup.enter.native="login"></el-input>
+              </el-form-item>
+              <el-form-item label prop="password">
+                <el-input class="input" v-model="userForm.password" type="password" placeholder="请输入密码" @keyup.enter.native="login"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-link class="register" to="/register">立即注册</el-link>
+              </el-form-item>
+              <el-form-item>
+                <div class="btn-login">
+                  <el-button type="primary" @click="login">登录</el-button>
+                  <el-button @click="cancel">取消</el-button>
+                </div>
+              </el-form-item>
+            </el-form>
+          </el-tab-pane>
+          <!-- 二维码登录 -->
+          <el-tab-pane label="二维码登录" name="qr">
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </div>
+  </body>
+  <!-- import Vue before Element -->
+  <script src="../static/vue"></script>
+  <!-- import JavaScript -->
+  <script src="../static/element-ui-index.js"></script>
+  <script src="../static/axios.min.js"></script>
+  <script src="../static/md5.min.js"></script>
+  <script type="text/javascript">
+    new Vue({
+      el: '#app',
+      data: function() {
+        return { 
+          activeName: 'account',
+          alert: false,
+          alertMsg: '',
+          userForm: {},
+          userRules: {
+            user: [{ required: true, message: "手机号不能为空", trigger: "blur" }],
+            password: [{ required: true, message: "密码不能为空", trigger: "blur" }]
+          },
+          scope: "",
+          client_id: "",
+          client_secret: ""
+        }
+      },
+      methods: {
+        /**
+         * 登录
+         */
+        login() {
+          // 隐藏错误消息
+          this.alert = false;
+
+          var me = this;
+          // 表单验证
+          this.$refs["userForm"].validate(valid => {
+            if (valid) {
+              // 登录
+              var form = new FormData();
+              form.username = this.userForm.user;
+              // md5密码
+              form.password = md5(this.userForm.password);
+              axios.post("http://192.168.11.233:9100/api/iop-authentication/login", form).then(response => {
+                debugger;
+
+                // if (response.data.code == '100'){
+                //   // 密码登录出错
+                //   this.alert = true
+                //   this.alertMsg = response.data.message
+
+                // } else if (response.data.code == '601') {
+                //   // 验证码登录，若用户不存在，引导去注册
+                //   this.goToRegister()
+
+                // } else{
+                //   this.$router.push({ path: '/user/member' })
+                // }
+              },
+              error => {
+                // 请求失败
+                console.log(error);
+              });
+            } else {
+              // 表单验证错误
+              return false;
+            }
+
+          })
+        },
+
+        /**
+         * 取消
+         */
+        cancel() {
+
+        },
+      }
+    })
+  </script>
+  <style>
+    .login {
+      height: 885px;
+      text-align: center;
+    }
+    .login .tabs {
+      height: 380px;
+      width: 480px;
+      display: inline-block;
+      text-align: left;
+      margin: 14rem;
+      background: #fff;
+      border: 1px solid #dcdfe6;
+      -webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.12),
+        0 0 6px 0 rgba(0, 0, 0, 0.04);
+      box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.12), 0 0 6px 0 rgba(0, 0, 0, 0.04);
+    }
+    .login .tabs .el-tabs--border-card {
+      background: none;
+      border: none;
+      box-shadow: none;
+      -webkit-box-shadow: none;
+    }
+    .login .tabs .el-tabs__nav {
+      width: 100%;
+    }
+    
+    .login .el-tabs--border-card > .el-tabs__header .el-tabs__item {
+      width: 51%;
+      text-align: center;
+      height: 3rem;
+      line-height: 3rem;
+      font-size: 1.2rem;
+      border: none;
+    }
+    
+    .el-tab-pane {
+      padding: 30px;
+      height: 248px;
+    }
+    
+    /* 找回密码 */
+    .reg.find-pw {
+      margin: 0 16rem 1rem 1rem;
+      display: inline-block;
+    }
+    
+    /* 注册 */
+    .register {
+      display: initial;
+      float: right;
+      color: #666;
+    }
+    
+    a:link {
+      color: #666;
+    }
+    
+    /* 按钮 */
+    .btn-login {
+      text-align: center;
+    }
+  </style>
+</html>
